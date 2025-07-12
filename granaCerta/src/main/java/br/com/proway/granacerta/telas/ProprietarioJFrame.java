@@ -399,6 +399,7 @@ public class ProprietarioJFrame extends javax.swing.JFrame {
         String nome2 = jTextFieldPaciente1.getText();
         double altura = Double.parseDouble(jTextFieldAltura.getText());
         double peso = Double.parseDouble(jTextFieldPeso.getText());
+        
         JOptionPane.showMessageDialog(null, nome2 + " tem o IMC de " + (peso / altura)* altura);
     }//GEN-LAST:event_jButton2ActionPerformed
 
