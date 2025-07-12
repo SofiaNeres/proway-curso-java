@@ -4,7 +4,7 @@
  */
 package br.com.proway.granacerta.exemplos;
 
-import br.com.proway.granacerta.bean.Proprietário;
+import br.com.proway.granacerta.bean.Proprietario;
 import javax.swing.JOptionPane;
 
 /**
@@ -13,36 +13,36 @@ import javax.swing.JOptionPane;
  */
 public class InstanciarObjetos {
     public static void main(String[] args) {
-        //Instanciando um objeto chamado "joão" da classe Proprietário
-        Proprietário joao = new Proprietário();
-        //Definindo valor para os atributos do objeto joao
-        joao.nome = "João";
-        joao.email = "joao@gmail.com";
-        joao.id = 73;
-        joao.cpf = "456.291.200-10";
-        joao.senha = "123";
-        
-        //Instanciando um objeto chamado "maria" da classe Proprietário
-        Proprietário maria = new Proprietário();
-        //Definindo valor para os atributos do objeto joao
-        maria.nome = "Maria da Silva";
-        maria.email = "maria@gmail.com";
-        maria.id = 74;
-        maria.cpf = "123.456.789-10";
-        maria.senha = "1234";
-        
-        //Alterar nome Joao
-        joao.nome = "Joao Souza";
-        
+        // Instanciando um objeto chamado "joao" da clsse Proprietario
+        Proprietario joao = new Proprietario();
+        // Definindo valor para os atributos do objeto jao
+        joao.setNome("João");
+        joao.setEmail("joao@gmail.com");
+//        joao.id = 73;
+        joao.setId(73);
+        joao.setCPF("456.291.200-10");
+        joao.setSenha("123");
+
+        // Instnciando um objeto chamdo "maria" da classe Proprietario
+        Proprietario maria = new Proprietario();
+        maria.setId(74);
+        maria.setEmail("maria@gmail.com");
+        maria.setNome("Maria da Silva");
+        maria.setSenha("1234");
+        maria.setCPF("123.456.789.10");
+
+        // Alterar o nome do joão
+        joao.setNome("João Souza");
+
         JOptionPane.showMessageDialog(null,
-                "id: " + joao.id +
-                "\nNome: " + joao.nome +
-                "\nCPF: " + joao.cpf +
-                "\nEmail: " + joao.email +
-                "\n\nId: " + maria.id +
-                "\nNome: " + maria.nome +
-                "\nCPF: " + maria.cpf +
-                "\nEmail: " + maria.email); 
+                "Id: " + joao.getId()
+                + "\nNome: " + joao.getNome()
+                + "\nCPF: " + joao.getCPF()
+                + "\nE-mail: " + joao.getEmail()
+                + "\n\nId: " + maria.getId()
+                + "\nNome: " + maria.getNome()
+                + "\nCPF: " + maria.getCPF()
+                + "\nE-mail: " + maria.getEmail()); 
         
         /*
         Criar classe Conta na package bean com os seguintes atributos:

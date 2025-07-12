@@ -107,10 +107,7 @@
                       </Group>
                       <EmptySpace max="32767" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
-                          <Group type="102" alignment="1" attributes="0">
-                              <EmptySpace pref="77" max="-2" attributes="0"/>
-                              <Component id="jButton1Apresentar" min="-2" max="-2" attributes="0"/>
-                          </Group>
+                          <Component id="jButton1Apresentar" alignment="1" min="-2" max="-2" attributes="0"/>
                           <Group type="103" alignment="1" groupAlignment="0" attributes="0">
                               <Component id="jTextFieldSobrenome" min="-2" pref="168" max="-2" attributes="0"/>
                               <Component id="jLabel2" min="-2" pref="75" max="-2" attributes="0"/>

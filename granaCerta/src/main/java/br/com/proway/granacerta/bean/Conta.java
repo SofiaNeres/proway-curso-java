@@ -8,16 +8,9 @@ package br.com.proway.granacerta.bean;
  *
  * @author Master
  */
-public class Proprietário {
-    
-    /* Proprietario: id, nome, cpf, email, senha */
-    
-    // Atributos (são características)
+public class Conta {
+
     public int id;
     public String nome;
-    public String cpf;
-    public String email;
-    public String senha;
-    
-    
+    public String saldo;
 }
