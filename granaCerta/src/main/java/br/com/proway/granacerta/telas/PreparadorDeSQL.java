@@ -4,6 +4,8 @@
  */
 package br.com.proway.granacerta.telas;
 
+import java.sql.ResultSet;
+
 /**
  *
  * @author Master
@@ -23,6 +25,10 @@ class PreparadorDeSQL {
     }
 
     static void setInt(int i, int tipoSelecionado) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    static ResultSet getResultSet() {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
     
