@@ -243,14 +243,14 @@ public class ContasJFrame extends javax.swing.JFrame {
     
     
     private void jButtonApagarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonApagarActionPerformed
-        //comando q sera executado no banco de dados
-        String sql = "DELETE FROM contas WHERE id = ?";
 
         int indiceLinhaSelecionada = jTableContas.getSelectedRow();
         idEditar = Integer.parseInt(modeloTabela.getValueAt(indiceLinhaSelecionada, 0).toString());
-        try (Connection conexao = BancoDadosUtil.getConnection()) {
-            PreparadorDeSQL.setInt(1, idEditar);
-            PreparadorDeSQL.execute();
+        
+        try {
+            ContaRepositoryInterfaceJava repositorio = new ContaRepository();
+            repositorio.apagar(idEditar);
+            
             JOptionPane.showMessageDialog(null, "Conta Apagada com sucesso");
             consultarContas();
             idEditar = -1;

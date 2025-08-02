@@ -6,6 +6,7 @@ package br.com.proway.granacerta.repositories;
 
 import br.com.proway.granacerta.bancoDados.BancoDadosUtil;
 import br.com.proway.granacerta.bean.Conta;
+import br.com.proway.granacerta.telas.PreparadorDeSQL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -39,13 +40,28 @@ public class ContaRepository implements ContaRepositoryInterfaceJava {
     }
 
     @Override
-    public void editar(Conta conta) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    public void editar(Conta conta)throws SQLException {
+        String sql = "UPDATE contas SET nome = ?, tipo = ?, saldo = ?, descricao = ? WHERE id = ?";
+        try (Connection conexao = BancoDadosUtil.getConnection()){
+            PreparedStatement preparadorSQL = conexao.prepareStatement(sql);
+            preparadorSQL.setString(1, conta.getNome());
+            preparadorSQL.setInt(2, conta.getTipo());
+            preparadorSQL.setDouble(3, conta.getSaldo());
+            preparadorSQL.setString(4, conta.getDescricao());
+            preparadorSQL.setInt(5, conta.getId());
+            preparadorSQL.execute();      
+        }
     }
 
     @Override
-    public void apagar(int id) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    public void apagar(int id)throws SQLException {
+        try (Connection conexao = BancoDadosUtil.getConnection()) {
+            //comando q sera executado no banco de dados
+            String sql = "DELETE FROM contas WHERE id = ?";
+            PreparedStatement preparadorDeSQL = conexao.prepareStatement(sql);
+            preparadorDeSQL.setInt(1, idEditar);
+            preparadorDeSQL.execute();
+        }
     }
 // Create, READ, Update, DELETE
     //adicionar
