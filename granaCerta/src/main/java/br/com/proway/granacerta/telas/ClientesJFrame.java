@@ -28,8 +28,8 @@ public class ClientesJFrame extends javax.swing.JFrame {
      */
     public ClientesJFrame() {
         initComponents();
-        //modeloTabela = (DefaultTableModel) jTableClientes.getModel();
-        //consultarClientes();
+        modeloTabela = (DefaultTableModel) jTableClientes.getModel();
+        consultarClientes();
     }
 
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -94,8 +94,22 @@ public class ClientesJFrame extends javax.swing.JFrame {
             new String [] {
                 "Id", "Nome", "CNPJ"
             }
-        ));
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        jTableClientes.getTableHeader().setReorderingAllowed(false);
         jScrollPane1.setViewportView(jTableClientes);
+        if (jTableClientes.getColumnModel().getColumnCount() > 0) {
+            jTableClientes.getColumnModel().getColumn(0).setResizable(false);
+            jTableClientes.getColumnModel().getColumn(1).setResizable(false);
+            jTableClientes.getColumnModel().getColumn(2).setResizable(false);
+        }
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -133,8 +147,7 @@ public class ClientesJFrame extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jButtonApagar)
-                            .addComponent(jButtonEditar))
-                        .addContainerGap(18, Short.MAX_VALUE))
+                            .addComponent(jButtonEditar)))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabelNome)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -146,8 +159,8 @@ public class ClientesJFrame extends javax.swing.JFrame {
                         .addGap(18, 18, 18)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jButtonCancelar)
-                            .addComponent(jButtonSalvar))
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                            .addComponent(jButtonSalvar))))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
@@ -166,20 +179,20 @@ public class ClientesJFrame extends javax.swing.JFrame {
         String cnpj = jFormattedTextFieldCNPJ.getText();
 
     try (Connection conexao = BancoDadosUtil.getConnection()) {
-        String sql = "INSERT INTO clientes (id, nome, cnpj) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO clientes (nome, cnpj) VALUES (?, ?)";
         PreparedStatement stmt = conexao.prepareStatement(sql);
         stmt.setString(1, nome);
         stmt.setString(2, cnpj);
         stmt.executeUpdate();
+        JOptionPane.showMessageDialog(null, "Cliente cadastrado com sucesso!");
 
-        JOptionPane.showMessageDialog(this, "Cliente cadastrado com sucesso!");
-
-        consultarClientes(); // Atualiza a tabela com dados do banco
+        consultarClientes();
         jTextFieldNome.setText("");
         jFormattedTextFieldCNPJ.setText("");
-    } catch (Exception e) {
-        e.printStackTrace();
-        JOptionPane.showMessageDialog(this, "Erro ao salvar cliente.");
+        
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Não foi possível cadastrar cliente");
     }
     }//GEN-LAST:event_jButtonSalvarActionPerformed
 
@@ -200,32 +213,37 @@ public class ClientesJFrame extends javax.swing.JFrame {
     private void jButtonApagarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonApagarActionPerformed
     int linhaSelecionada = jTableClientes.getSelectedRow();
 
-    if (linhaSelecionada >= 1) {
-        int confirmacao = JOptionPane.showConfirmDialog(
-            this,
-            "Tem certeza que deseja apagar esse cliente?",
-            "Confirmação",
-            JOptionPane.YES_NO_OPTION
-        );
+    if (linhaSelecionada >= 0) {
+    int confirmacao = JOptionPane.showConfirmDialog(
+        this,
+        "Tem certeza que deseja apagar esse cliente?",
+        "Confirmação",
+        JOptionPane.YES_NO_OPTION
+    );
 
-            if (confirmacao == JOptionPane.YES_OPTION) {
-            int id = (int) jTableClientes.getValueAt(linhaSelecionada, 1); // Coluna 1 = id
+    if (confirmacao == JOptionPane.YES_OPTION) {
+        int id = (int) jTableClientes.getValueAt(linhaSelecionada, 0); 
 
-            try (Connection conexao = BancoDadosUtil.getConnection()) {
-                String sql = "DELETE FROM clientes WHERE id = ?";
-                PreparedStatement stmt = conexao.prepareStatement(sql);
-                stmt.setInt(1, id);
-                stmt.executeUpdate();
+        try (Connection conexao = BancoDadosUtil.getConnection()) {
+            String sql = "DELETE FROM clientes WHERE id = ?";
+            PreparedStatement stmt = conexao.prepareStatement(sql);
+            stmt.setInt(1, id);
+            int linhasAfetadas = stmt.executeUpdate();
 
+            if (linhasAfetadas > 0) {
                 JOptionPane.showMessageDialog(this, "Cliente apagado com sucesso!");
                 consultarClientes(); // atualiza a tabela
-            } catch (Exception e) {
-                e.printStackTrace();
-                JOptionPane.showMessageDialog(this, "Erro ao apagar cliente.");
+            } else {
+                JOptionPane.showMessageDialog(this, "Nenhum cliente foi apagado.");
             }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Erro ao apagar cliente.");
         }
+    }
         } else {
-        JOptionPane.showMessageDialog(this, "Selecione uma linha para apagar.");
+            JOptionPane.showMessageDialog(this, "Selecione uma linha para apagar.");
         }
     }//GEN-LAST:event_jButtonApagarActionPerformed
 
@@ -256,7 +274,7 @@ public class ClientesJFrame extends javax.swing.JFrame {
     
     public void consultarClientes() {
     try (Connection conexao = BancoDadosUtil.getConnection()) {
-        String sql = "SELECT id, nome, cnpj FROM cliente;";
+        String sql = "SELECT id, nome, cnpj FROM clientes;";
         Statement executorSql = conexao.createStatement();
         executorSql.execute(sql);
         ResultSet registros = executorSql.getResultSet();

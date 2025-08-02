@@ -5,6 +5,9 @@
 package br.com.proway.granacerta.telas;
 
 import br.com.proway.granacerta.bancoDados.BancoDadosUtil;
+import br.com.proway.granacerta.bean.Conta;
+import br.com.proway.granacerta.repositories.ContaRepository;
+import br.com.proway.granacerta.repositories.ContaRepositoryInterfaceJava;
 import static java.lang.Integer.parseInt;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -221,8 +224,14 @@ public class ContasJFrame extends javax.swing.JFrame {
             tipoSelecionado = 1;
         }
         
+        Conta conta = new Conta();
+        conta.setNome(nome);
+        conta.setTipo(tipoSelecionado);
+        conta.setDescricao(descricao);
+        conta.setSaldo(saldo);
+        
         if (idEditar == -1){
-            cadastrarConta(nome, tipoSelecionado, saldo, descricao);
+            cadastrarConta(conta);
         } else {
             editarConta(nome, tipoSelecionado, saldo, descricao);
         }
@@ -315,15 +324,12 @@ public class ContasJFrame extends javax.swing.JFrame {
         }
     }
     
-    private void cadastrarConta (){
-        String sql = "INSERT INTO contas (nome, tipo, saldo, descricao) VALUES (?, ?, ?, ?)";
-        try (Connection conexao = BancoDadosUtil.getConnection()) {
-            PreparedStatement preparadorDeSQL = conexao.prepareStatement(sql);
-            preparadorDeSQL.setString(1, nome);
-            preparadorDeSQL.setInt(2, tipoSelecionado);
-            preparadorDeSQL.setDouble(3, saldo);
-            preparadorDeSQL.setString(4, descricao);
-            preparadorDeSQL.execute();
+    private void cadastrarConta (Conta conta){
+        try {
+            ContaRepositoryInterfaceJava repositorio = new ContaRepository();
+            repositorio.adicionar(conta);
+            
+            
             JOptionPane.showMessageDialog(null, "Conta cadastrada com sucesso");
             limparCampos();
             consultarContas();
