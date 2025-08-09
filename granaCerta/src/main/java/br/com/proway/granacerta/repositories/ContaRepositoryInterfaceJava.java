@@ -18,7 +18,7 @@ public interface ContaRepositoryInterfaceJava {
     
     void adicionar(Conta conta)throws SQLException;
     List <Conta> obterTodos()throws SQLException;
-    conta obterPorId(int id)throws SQLException;
+    Conta obterPorId(int id)throws SQLException;
     void editar (Conta conta)throws SQLException;
     void apagar(int id) throws SQLException;
     

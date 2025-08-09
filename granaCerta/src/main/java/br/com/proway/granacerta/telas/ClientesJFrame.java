@@ -5,10 +5,20 @@
 package br.com.proway.granacerta.telas;
 
 import br.com.proway.granacerta.bancoDados.BancoDadosUtil;
+import br.com.proway.granacerta.bean.Cliente;
+import br.com.proway.granacerta.bean.Conta;
+import br.com.proway.granacerta.repositories.ClienteRepository;
+import br.com.proway.granacerta.repositories.ClienteRepositoryInterface;
+import br.com.proway.granacerta.repositories.ContaRepository;
+import br.com.proway.granacerta.repositories.ContaRepositoryInterfaceJava;
+import static com.mysql.cj.conf.PropertyKey.logger;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
@@ -17,19 +27,15 @@ import javax.swing.table.DefaultTableModel;
  * @author Master
  */
 public class ClientesJFrame extends javax.swing.JFrame {
-    
-    DefaultTableModel modeloTabela;
-    int idEditar = -1;
-    
-    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(ClientesJFrame.class.getName());
 
-    /**
-     * Creates new form ClientesJFrame
-     */
+    private final DefaultTableModel modeloTabela;
+    private final ClienteRepositoryInterface clienteRepo = new ClienteRepository();
+    private Integer idClienteSelecionado = null;
+
     public ClientesJFrame() {
         initComponents();
         modeloTabela = (DefaultTableModel) jTableClientes.getModel();
-        consultarClientes();
+        carregarClientes(); // Agora este método funciona
     }
 
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -72,6 +78,11 @@ public class ClientesJFrame extends javax.swing.JFrame {
         });
 
         jButtonCancelar.setText("Cancelar");
+        jButtonCancelar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonCancelarActionPerformed(evt);
+            }
+        });
 
         jButtonEditar.setText("Editar");
         jButtonEditar.addActionListener(new java.awt.event.ActionListener() {
@@ -175,87 +186,26 @@ public class ClientesJFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_jFormattedTextFieldCNPJActionPerformed
 
     private void jButtonSalvarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonSalvarActionPerformed
-        String nome = jTextFieldNome.getText();
-        String cnpj = jFormattedTextFieldCNPJ.getText();
-
-    try (Connection conexao = BancoDadosUtil.getConnection()) {
-        String sql = "INSERT INTO clientes (nome, cnpj) VALUES (?, ?)";
-        PreparedStatement stmt = conexao.prepareStatement(sql);
-        stmt.setString(1, nome);
-        stmt.setString(2, cnpj);
-        stmt.executeUpdate();
-        JOptionPane.showMessageDialog(null, "Cliente cadastrado com sucesso!");
-
-        consultarClientes();
-        jTextFieldNome.setText("");
-        jFormattedTextFieldCNPJ.setText("");
-        
-        } catch (Exception e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(null, "Não foi possível cadastrar cliente");
-    }
+        salvarCliente();
     }//GEN-LAST:event_jButtonSalvarActionPerformed
 
     private void jButtonEditarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonEditarActionPerformed
-    int linhaSelecionada = jTableClientes.getSelectedRow(); 
-
-    if (linhaSelecionada >= 0) {
-        String nome = jTableClientes.getValueAt(linhaSelecionada, 1).toString(); // coluna 1 = Nome
-        String cnpj = jTableClientes.getValueAt(linhaSelecionada, 2).toString(); // coluna 2 = CNPJ
-
-        jLabelNome.setText(nome);
-        jLabelCNPJ.setText(cnpj);
-    } else {
-        JOptionPane.showMessageDialog(this, "Selecione uma linha para editar.");
-    }
+        editarCliente();
     }//GEN-LAST:event_jButtonEditarActionPerformed
 
     private void jButtonApagarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonApagarActionPerformed
-    int linhaSelecionada = jTableClientes.getSelectedRow();
+        apagarCliente();
 
-    if (linhaSelecionada >= 0) {
-    int confirmacao = JOptionPane.showConfirmDialog(
-        this,
-        "Tem certeza que deseja apagar esse cliente?",
-        "Confirmação",
-        JOptionPane.YES_NO_OPTION
-    );
-
-    if (confirmacao == JOptionPane.YES_OPTION) {
-        int id = (int) jTableClientes.getValueAt(linhaSelecionada, 0); 
-
-        try (Connection conexao = BancoDadosUtil.getConnection()) {
-            String sql = "DELETE FROM clientes WHERE id = ?";
-            PreparedStatement stmt = conexao.prepareStatement(sql);
-            stmt.setInt(1, id);
-            int linhasAfetadas = stmt.executeUpdate();
-
-            if (linhasAfetadas > 0) {
-                JOptionPane.showMessageDialog(this, "Cliente apagado com sucesso!");
-                consultarClientes(); // atualiza a tabela
-            } else {
-                JOptionPane.showMessageDialog(this, "Nenhum cliente foi apagado.");
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Erro ao apagar cliente.");
-        }
-    }
-        } else {
-            JOptionPane.showMessageDialog(this, "Selecione uma linha para apagar.");
-        }
     }//GEN-LAST:event_jButtonApagarActionPerformed
+
+    private void jButtonCancelarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonCancelarActionPerformed
+        limparCampos();
+    }//GEN-LAST:event_jButtonCancelarActionPerformed
 
     /**
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {
@@ -263,37 +213,84 @@ public class ClientesJFrame extends javax.swing.JFrame {
                     break;
                 }
             }
-        } catch (ReflectiveOperationException | javax.swing.UnsupportedLookAndFeelException ex) {
-            logger.log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
+            Logger.getLogger(ClientesJFrame.class.getName()).log(Level.SEVERE, null, ex);
         }
-        //</editor-fold>
 
-        /* Create and display the form */
         java.awt.EventQueue.invokeLater(() -> new ClientesJFrame().setVisible(true));
     }
-    
-    public void consultarClientes() {
-    try (Connection conexao = BancoDadosUtil.getConnection()) {
-        String sql = "SELECT id, nome, cnpj FROM clientes;";
-        Statement executorSql = conexao.createStatement();
-        executorSql.execute(sql);
-        ResultSet registros = executorSql.getResultSet();
 
-        modeloTabela.setRowCount(0);
+    private void salvarCliente() {
+        String nome = jTextFieldNome.getText().trim();
+        String cnpj = jFormattedTextFieldCNPJ.getText().trim();
 
-        while (registros.next()) {
-            int id = registros.getInt("id");
-            String nome = registros.getString("nome");
-            String cnpj = registros.getString("cnpj");
-
-            modeloTabela.addRow(new Object[]{id, nome, cnpj});
+        if (nome.isEmpty() || cnpj.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Preencha todos os campos!", "Atenção", JOptionPane.WARNING_MESSAGE);
+            return;
         }
 
-    } catch (Exception e) {
-        e.printStackTrace();
-        JOptionPane.showMessageDialog(null, "Não foi possível consultar os clientes");
+        try {
+            Cliente cliente = new Cliente();
+            cliente.setNome(nome);
+            cliente.setCnpj(cnpj);
+
+            if (idClienteSelecionado == null) {
+                clienteRepo.adicionar(cliente);
+                JOptionPane.showMessageDialog(this, "Cliente cadastrado com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                cliente.setId(idClienteSelecionado);
+                clienteRepo.editar(cliente);
+                JOptionPane.showMessageDialog(this, "Cliente atualizado com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+            }
+
+            limparCampos();
+            carregarClientes();
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Erro ao salvar cliente: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+        }
     }
-}
+
+    private void editarCliente() {
+        int linhaSelecionada = jTableClientes.getSelectedRow();
+        if (linhaSelecionada == -1) {
+            JOptionPane.showMessageDialog(this, "Selecione um cliente na tabela para editar.", "Atenção", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        idClienteSelecionado = (Integer) modeloTabela.getValueAt(linhaSelecionada, 0);
+        jTextFieldNome.setText((String) modeloTabela.getValueAt(linhaSelecionada, 1));
+        jFormattedTextFieldCNPJ.setText((String) modeloTabela.getValueAt(linhaSelecionada, 2));
+    }
+
+    private void apagarCliente() {
+        int linhaSelecionada = jTableClientes.getSelectedRow();
+        if (linhaSelecionada == -1) {
+            JOptionPane.showMessageDialog(this, "Selecione um cliente para apagar.", "Atenção", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        int confirm = JOptionPane.showConfirmDialog(this, "Tem certeza que deseja apagar este cliente?", "Confirmação", JOptionPane.YES_NO_OPTION);
+        if (confirm == JOptionPane.YES_OPTION) {
+            try {
+                int id = (Integer) modeloTabela.getValueAt(linhaSelecionada, 0);
+                clienteRepo.apagar(id);
+                carregarClientes();
+                limparCampos();
+                JOptionPane.showMessageDialog(this, "Cliente apagado com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+            } catch (Exception e) {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(this, "Erro ao apagar cliente: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    private void limparCampos() {
+        jTextFieldNome.setText("");
+        jFormattedTextFieldCNPJ.setText("");
+        idClienteSelecionado = null;
+        jTableClientes.clearSelection();
+        jTextFieldNome.requestFocus();
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButtonApagar;
@@ -308,7 +305,20 @@ public class ClientesJFrame extends javax.swing.JFrame {
     private javax.swing.JTextField jTextFieldNome;
     // End of variables declaration//GEN-END:variables
 
-    private void consultarContas() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+
+    private void carregarClientes() {
+        modeloTabela.setRowCount(0); // Limpa a tabela
+        try {
+            for (Cliente cliente : clienteRepo.obterTodos()) {
+                modeloTabela.addRow(new Object[]{
+                    cliente.getId(),
+                    cliente.getNome(),
+                    cliente.getCnpj()
+                });
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Erro ao carregar clientes: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+        }
     }
 }
